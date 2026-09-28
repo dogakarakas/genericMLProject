@@ -37,14 +37,51 @@ class ModelTrainer:
                 "Decision Tree": DecisionTreeRegressor(),
                 "Gradient Boosting": GradientBoostingClassifier(),
                 "Linear Regression": LinearRegression(),
-                "k-Neighbors Classifier": KNeighborsRegressor(),
-                "XGBClassifier": XGBRegressor(),
-                "Catboosting Classifier": CatBoostRegressor(verbose=False),
+                "XGBRegressor": XGBRegressor(),
+                "CatBoosting Regressor": CatBoostRegressor(verbose=False),
                 "AdaBoost Classifier": AdaBoostClassifier()
                 
             }
             
-            model_report : dict = evaluate_model(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,models=models)
+            params = {
+                "Decision Tree" : {
+                    'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
+                    # 'splitter':['best','random'],
+                    # 'max_features':['sqrt','log2'],
+                },
+                "Random Forest" :{
+                    # 'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
+                 
+                    # 'max_features':['sqrt','log2',None],  #how many features to consider at each split
+                    'n_estimators': [8,16,32,64,128,256]    #num of trees in the forest
+                },
+                "Gradient Boosting" : {
+                    # 'loss':['squared_error', 'huber', 'absolute_error', 'quantile'],
+                    'learning_rate':[.1,.01,.05,.001],      #scales how much each tree contributes
+                    'subsample':[0.6,0.7,0.75,0.8,0.85,0.9],#fraction of training rows used to fit each tree
+                    # 'criterion':['squared_error', 'friedman_mse'],
+                    # 'max_features':['auto','sqrt','log2'], 
+                    'n_estimators': [8,16,32,64,128,256]     #number of trees 
+                },
+                "Linear Regression":{},
+                "XGBRegressor":{
+                    'learning_rate':[.1,.01,.05,.001],        #step-size shrinkage per boosting round
+                    'n_estimators': [8,16,32,64,128,256]      #number of boosting rounds
+                },
+                "CatBoosting Regressor":{ 
+                    'depth': [6,8,10],                        #depth of each tree
+                    'learning_rate': [0.01, 0.05, 0.1],
+                    'iterations': [30, 50, 100]               #number of trees
+                },
+                "AdaBoost Classifier":{
+                    'learning_rate':[.1,.01,0.5,.001],        #shrinks the contribution of each weak learner
+                    # 'loss':['linear','square','exponential'], #how sample weights are updated after each round
+                    'n_estimators': [8,16,32,64,128,256]      #number of weak learners
+                }
+                
+            }
+            
+            model_report : dict = evaluate_model(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test,models=models, param=params)
             
             best_model_score = max(sorted(model_report.values()))
             best_model_name = list(model_report.keys())[list(model_report.values()).index(best_model_score)]
